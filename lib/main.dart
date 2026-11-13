@@ -20,6 +20,7 @@ class TeaFalaApp extends StatefulWidget {
 }
 
 class _TeaFalaAppState extends State<TeaFalaApp> {
+  // Serviços instanciados mas inicializados sob demanda (lazy)
   final TtsService _tts = TtsService();
   final StorageService _storage = StorageService();
   final ThemeService _theme = ThemeService();
@@ -27,50 +28,40 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
   final AudioRecordService _audioRecord = AudioRecordService();
 
   TranslationService? _tr;
-  bool _inicializado = false;
-  String? _erroInicializacao;
+  bool _pronto = false;
 
   @override
   void initState() {
     super.initState();
-    _inicializar();
+    _inicializarBasico();
   }
 
-  Future<void> _inicializar() async {
+  /// Inicialização mínima e segura — nunca trava a abertura do app.
+  Future<void> _inicializarBasico() async {
     try {
-      await _tts.init();
-    } catch (e) {
-      debugPrint('Erro ao iniciar TTS: $e');
-    }
-
-    try {
+      // Storage é leve e sempre funciona
       await _storage.init();
     } catch (e) {
-      debugPrint('Erro ao iniciar Storage: $e');
+      debugPrint('Storage init falhou (não crítico): $e');
     }
 
     try {
       await _theme.init();
     } catch (e) {
-      debugPrint('Erro ao iniciar Theme: $e');
+      debugPrint('Theme init falhou (não crítico): $e');
     }
 
     try {
       await _language.init();
     } catch (e) {
-      debugPrint('Erro ao iniciar Language: $e');
+      debugPrint('Language init falhou (não crítico): $e');
     }
 
-    try {
-      await _audioRecord.init();
-    } catch (e) {
-      debugPrint('Erro ao iniciar AudioRecord: $e');
-    }
-
+    // TTS e AudioRecord são inicializados lazy (sob demanda) para não travar o app
     if (mounted) {
       setState(() {
         _tr = TranslationService(_language);
-        _inicializado = true;
+        _pronto = true;
       });
     }
   }
@@ -84,16 +75,12 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_inicializado || _tr == null) {
-      return const MaterialApp(
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      );
-    }
+    // Sempre mostra a tela, mesmo se _pronto for false
+    final tr = _tr ?? TranslationService(_language);
+    final language = _language;
 
     return MaterialApp(
-      title: _tr!.t('appTitle'),
+      title: tr.t('appTitle'),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -116,20 +103,20 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
         Locale('en', 'US'),
         Locale('es', 'ES'),
       ],
-      locale: _language.locale,
+      locale: language.locale,
       home: HomeScreen(
         tts: _tts,
         storage: _storage,
         theme: _theme,
-        language: _language,
-        tr: _tr!,
+        language: language,
+        tr: tr,
         audioRecord: _audioRecord,
       ),
       routes: {
         '/settings': (_) => SettingsScreen(
               theme: _theme,
-              language: _language,
-              tr: _tr!,
+              language: language,
+              tr: tr,
               audioRecord: _audioRecord,
             ),
       },
