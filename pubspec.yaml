@@ -1,5 +1,5 @@
 name: tea_fala
-description: "TEA Fala - Quadro de Comunicação Offline para o público TEA (versão safe, sem dependências de hardware)"
+description: "TEA Fala - Quadro de Comunicação Offline para o público TEA"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,6 +10,12 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_tts: ^4.2.5
+  record: ^7.2.0
+  path_provider: ^2.1.3
+  shared_preferences: ^2.3.3
+  url_launcher: ^6.3.1
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +24,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/audios/

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/tts_service.dart';
-import '../services/translation_service.dart';
+import 'package:tea_fala/core/language/translation_service.dart';
+import 'package:tea_fala/core/theme/tts_service.dart';
 
 /// Tela dedicada para montar e ler frases completas.
 class FraseScreen extends StatefulWidget {
@@ -26,8 +26,6 @@ class _FraseScreenState extends State<FraseScreen> {
       appBar: AppBar(
         title: Text(widget.tr.t('phrase')),
         centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -43,10 +41,8 @@ class _FraseScreenState extends State<FraseScreen> {
                 maxLines: null,
                 expands: true,
                 decoration: InputDecoration(
-                  hintText: 'Exemplo: Quero água, por favor',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  hintText: widget.tr.t('writeText'),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                   filled: true,
                   fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                 ),

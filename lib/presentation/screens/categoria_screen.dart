@@ -1,36 +1,28 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import '../models/categoria.dart';
-import '../models/item_comunicacao.dart';
-import '../services/storage_service.dart';
-import '../services/theme_service.dart';
-import '../services/language_service.dart';
-import '../services/translation_service.dart';
-import '../services/tts_service.dart';
-import '../services/audio_record_service.dart';
-import '../widgets/item_botao.dart';
+import 'package:tea_fala/core/language/translation_service.dart';
+import 'package:tea_fala/core/theme/tts_service.dart';
+import 'package:tea_fala/core/theme/audio_record_service.dart';
+import 'package:tea_fala/data/models/communication_item.dart';
+import 'package:tea_fala/data/repositories/communication_repository.dart';
+import 'package:tea_fala/presentation/widgets/communication_button.dart';
 
 /// Tela de uma categoria: grade de ícones de comunicação.
 class CategoriaScreen extends StatefulWidget {
-  final Categoria categoria;
-  final List<ItemComunicacao> itens;
+  final CommunicationCategory categoria;
   final TtsService tts;
-  final StorageService storage;
-  final ThemeService theme;
-  final LanguageService language;
-  final TranslationService tr;
   final AudioRecordService audioRecord;
+  final TranslationService tr;
+  final bool imagesOnly;
+  final ValueChanged<bool> onImagesOnlyChanged;
 
   const CategoriaScreen({
     super.key,
     required this.categoria,
-    required this.itens,
     required this.tts,
-    required this.storage,
-    required this.theme,
-    required this.language,
-    required this.tr,
     required this.audioRecord,
+    required this.tr,
+    required this.imagesOnly,
+    required this.onImagesOnlyChanged,
   });
 
   @override
@@ -38,16 +30,9 @@ class CategoriaScreen extends StatefulWidget {
 }
 
 class _CategoriaScreenState extends State<CategoriaScreen> {
-  final List<ItemComunicacao> _frase = [];
-  bool _imagesOnly = false;
+  final List<CommunicationItem> _frase = [];
 
-  @override
-  void initState() {
-    super.initState();
-    widget.storage.init();
-  }
-
-  void _adicionarFrase(ItemComunicacao item) {
+  void _adicionarFrase(CommunicationItem item) {
     setState(() {
       _frase.add(item);
     });
@@ -67,16 +52,13 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final repo = CommunicationRepository.instance;
+    final itens = repo.itemsByCategory(widget.categoria.id);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.categoria.nome),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: Text(widget.tr.t(widget.categoria.nameKey)),
         centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: Column(
         children: [
@@ -84,7 +66,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           if (_frase.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(16),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -99,12 +81,14 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                           spacing: 8,
                           runSpacing: 8,
                           children: _frase.asMap().entries.map((entry) {
-                            final index = entry.key;
+                            final i = entry.key;
                             final item = entry.value;
                             return Chip(
-                              label: Text('${item.emoji} ${_imagesOnly ? '' : item.rotulo}'),
+                              label: Text(
+                                '${item.emoji} ${widget.imagesOnly ? '' : item.label}',
+                              ),
                               deleteIcon: const Icon(Icons.close, size: 18),
-                              onDeleted: () => _removerDaFrase(index),
+                              onDeleted: () => _removerDaFrase(i),
                             );
                           }).toList(),
                         ),
@@ -131,7 +115,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                           icon: const Icon(Icons.volume_up),
                           label: Text(widget.tr.t('readPhrase')),
                           onPressed: () async {
-                            final texto = _frase.map((i) => i.rotulo).join(', ');
+                            final texto = _frase.map((i) => i.ttsText).join(', ');
                             await widget.tts.speak(texto);
                           },
                         ),
@@ -151,13 +135,13 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
-              itemCount: widget.itens.length,
+              itemCount: itens.length,
               itemBuilder: (context, index) {
-                final item = widget.itens[index];
-                return ItemBotao(
+                final item = itens[index];
+                return CommunicationButton(
                   item: item,
                   tts: widget.tts,
-                  imagesOnly: _imagesOnly,
+                  imagesOnly: widget.imagesOnly,
                   onAdicionarFrase: () => _adicionarFrase(item),
                   audioRecord: widget.audioRecord,
                   tr: widget.tr,
@@ -170,7 +154,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
       floatingActionButton: _frase.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () async {
-                final texto = _frase.map((i) => i.rotulo).join(', ');
+                final texto = _frase.map((i) => i.ttsText).join(', ');
                 await widget.tts.speak(texto);
               },
               icon: const Icon(Icons.volume_up),
@@ -179,5 +163,4 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           : null,
     );
   }
-
 }

@@ -1,4 +1,4 @@
-package br.com.valdenor.quadro_comunicacao_tea
+package br.com.valdenor.teafala
 
 import io.flutter.embedding.android.FlutterActivity
 

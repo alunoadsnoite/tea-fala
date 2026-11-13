@@ -1,9 +1,11 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../services/theme_service.dart';
-import '../services/language_service.dart';
-import '../services/audio_record_service.dart';
-import '../services/translation_service.dart';
+import 'package:tea_fala/core/language/language_service.dart';
+import 'package:tea_fala/core/language/translation_service.dart';
+import 'package:tea_fala/core/theme/audio_record_service.dart';
+import 'package:tea_fala/core/theme/theme_service.dart';
+import 'package:tea_fala/data/repositories/contact_repository.dart';
 
 /// Tela de Configurações do TEA Fala.
 class SettingsScreen extends StatefulWidget {
@@ -11,6 +13,8 @@ class SettingsScreen extends StatefulWidget {
   final LanguageService language;
   final TranslationService tr;
   final AudioRecordService audioRecord;
+  final bool imagesOnly;
+  final ValueChanged<bool> onImagesOnlyChanged;
 
   const SettingsScreen({
     super.key,
@@ -18,6 +22,8 @@ class SettingsScreen extends StatefulWidget {
     required this.language,
     required this.tr,
     required this.audioRecord,
+    required this.imagesOnly,
+    required this.onImagesOnlyChanged,
   });
 
   @override
@@ -29,27 +35,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Abre o cliente de e-mail para contatar o desenvolvedor.
   Future<void> _contactDeveloper() async {
-    final email = widget.tr.t('contactDeveloperEmail');
-    final subject = Uri.encodeComponent('Contato - TEA Fala');
-    final body = Uri.encodeComponent('Olá Valdenor,');
-    final url = 'mailto:$email?subject=$subject&body=$body';
-
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Não foi possível abrir o e-mail: $email'),
-          ),
-        );
-      }
+    final success = await ContactService.instance.contactDeveloper();
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não foi possível abrir o e-mail: ${ContactService.developerEmail}'),
+        ),
+      );
     }
   }
 
   /// Alterna gravação de áudio.
   Future<void> _toggleRecording() async {
-    final isRecording = await widget.audioRecord.isRecording;
+    final isRecording = await widget.audioRecord.isRecording();
 
     if (isRecording) {
       final path = await widget.audioRecord.stop();
@@ -65,29 +63,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     } else {
-      final hasPermission = await widget.audioRecord.hasPermission();
-      if (!hasPermission) {
-        if (mounted) {
+      try {
+        final available = await widget.audioRecord.init();
+        if (!available) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(widget.tr.t('permissionMicrophone'))),
+            );
+          }
+          return;
+        }
+
+        final path = await widget.audioRecord.start();
+        if (path != null && mounted) {
+          setState(() {
+            _recordedPath = null;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(widget.tr.t('permissionMicrophone')),
+              content: Text(widget.tr.t('recordStart')),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
-        return;
-      }
-
-      final path = await widget.audioRecord.start();
-      if (path != null && mounted) {
-        setState(() {
-          _recordedPath = null;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.tr.t('recordStart')),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      } catch (e) {
+        developer.log('Erro na gravação: $e', name: 'SettingsScreen', error: e);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(widget.tr.t('errorRecording'))),
+          );
+        }
       }
     }
   }
@@ -98,8 +103,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: Text(widget.tr.t('settings')),
         centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: ListView(
         children: [
@@ -108,31 +111,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.palette),
             title: Text(widget.tr.t('theme')),
             subtitle: Text(
-              widget.theme.themeModeIndex == 0
+              widget.theme.mode == AppThemeMode.light
                   ? widget.tr.t('themeLight')
-                  : widget.theme.themeModeIndex == 1
+                  : widget.theme.mode == AppThemeMode.dark
                       ? widget.tr.t('themeDark')
                       : widget.tr.t('themeSystem'),
             ),
-            trailing: DropdownButton<int>(
-              value: widget.theme.themeModeIndex,
+            trailing: DropdownButton<AppThemeMode>(
+              value: widget.theme.mode,
               items: [
-                DropdownMenuItem(
-                  value: 0,
-                  child: Text(widget.tr.t('themeLight')),
-                ),
-                DropdownMenuItem(
-                  value: 1,
-                  child: Text(widget.tr.t('themeDark')),
-                ),
-                DropdownMenuItem(
-                  value: 2,
-                  child: Text(widget.tr.t('themeSystem')),
-                ),
+                DropdownMenuItem(value: AppThemeMode.light, child: Text(widget.tr.t('themeLight'))),
+                DropdownMenuItem(value: AppThemeMode.dark, child: Text(widget.tr.t('themeDark'))),
+                DropdownMenuItem(value: AppThemeMode.system, child: Text(widget.tr.t('themeSystem'))),
               ],
               onChanged: (value) async {
                 if (value != null) {
-                  await widget.theme.setThemeMode(value);
+                  await widget.theme.setMode(value);
                   if (mounted) setState(() {});
                 }
               },
@@ -144,18 +138,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.translate),
             title: Text(widget.tr.t('language')),
-            subtitle: Text(widget.language.currentLanguageName),
-            trailing: DropdownButton<String>(
-              value: widget.language.languageCode,
-              items: LanguageService.supportedLanguages.entries
-                  .map((entry) => DropdownMenuItem(
-                        value: entry.key,
-                        child: Text(entry.value),
+            subtitle: Text(widget.language.language.name),
+            trailing: DropdownButton<AppLanguage>(
+              value: widget.language.language,
+              items: AppLanguage.values
+                  .map((lang) => DropdownMenuItem(
+                        value: lang,
+                        child: Text(lang.name),
                       ))
                   .toList(),
-              onChanged: (code) async {
-                if (code != null) {
-                  await widget.language.setLanguageCode(code);
+              onChanged: (lang) async {
+                if (lang != null) {
+                  await widget.language.setLanguage(lang);
                   if (mounted) setState(() {});
                 }
               },
@@ -169,8 +163,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text(widget.tr.t('imagesOnlyMode')),
             subtitle: Text(widget.tr.t('imagesOnlyModeDescription')),
             trailing: Switch(
-              value: false,
-              onChanged: (_) {},
+              value: widget.imagesOnly,
+              onChanged: (value) {
+                widget.onImagesOnlyChanged(value);
+                if (mounted) setState(() {});
+              },
             ),
           ),
           const Divider(),
@@ -182,9 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: ElevatedButton.icon(
               icon: const Icon(Icons.mic, color: Colors.white),
               label: Text(widget.tr.t('recordStart')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               onPressed: _toggleRecording,
             ),
           ),
@@ -210,7 +205,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.email, color: Colors.blue),
             title: Text(widget.tr.t('contactDeveloper')),
-            subtitle: Text(widget.tr.t('contactDeveloperEmail')),
+            subtitle: Text(ContactService.developerEmail),
             trailing: const Icon(Icons.open_in_new),
             onTap: _contactDeveloper,
           ),

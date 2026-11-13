@@ -1,7 +1,11 @@
-import 'language_service.dart';
+/// Serviço de tradução manual (sem dependência de pacote i18n externo).
+import 'package:tea_fala/core/language/language_service.dart';
 
-/// Serviço de tradução manual (sem dependência externa de i18n).
 class TranslationService {
+  TranslationService(this._language);
+
+  final LanguageService _language;
+
   static final Map<String, Map<String, String>> _translations = {
     'pt': {
       'appTitle': 'TEA Fala',
@@ -114,7 +118,6 @@ class TranslationService {
       'noAudioRecorded': 'No audio recorded yet',
       'playAudio': 'Play Audio',
       'deleteAudio': 'Delete Audio',
-      // Rótulos dos itens de comunicação
       'fome': "I'm hungry",
       'sede': "I'm thirsty",
       'banheiro': 'I need the bathroom',
@@ -185,7 +188,6 @@ class TranslationService {
       'noAudioRecorded': 'No hay audio grabado aún',
       'playAudio': 'Reproducir Audio',
       'deleteAudio': 'Eliminar Audio',
-      // Rótulos dos itens de comunicação
       'fome': 'Tengo hambre',
       'sede': 'Tengo sed',
       'banheiro': 'Necesito el baño',
@@ -218,13 +220,8 @@ class TranslationService {
     },
   };
 
-  final LanguageService _language;
-
-  TranslationService(this._language);
-
-  /// Retorna o texto traduzido para a chave dada.
   String t(String key) {
-    final langMap = _translations[_language.languageCode];
+    final langMap = _translations[_language.language.code];
     if (langMap == null) return key;
     return langMap[key] ?? key;
   }
