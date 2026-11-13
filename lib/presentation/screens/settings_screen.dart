@@ -15,6 +15,8 @@ class SettingsScreen extends StatefulWidget {
   final AudioRecordService audioRecord;
   final bool imagesOnly;
   final ValueChanged<bool> onImagesOnlyChanged;
+  final ValueChanged<AppLanguage> onLanguageChanged;
+  final ValueChanged<AppThemeMode> onThemeChanged;
 
   const SettingsScreen({
     super.key,
@@ -24,6 +26,8 @@ class SettingsScreen extends StatefulWidget {
     required this.audioRecord,
     required this.imagesOnly,
     required this.onImagesOnlyChanged,
+    required this.onLanguageChanged,
+    required this.onThemeChanged,
   });
 
   @override
@@ -127,7 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) async {
                 if (value != null) {
                   await widget.theme.setMode(value);
-                  if (mounted) setState(() {});
+                  widget.onThemeChanged(value);
                 }
               },
             ),
@@ -150,7 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (lang) async {
                 if (lang != null) {
                   await widget.language.setLanguage(lang);
-                  if (mounted) setState(() {});
+                  widget.onLanguageChanged(lang);
                 }
               },
             ),

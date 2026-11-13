@@ -60,7 +60,7 @@ class _CommunicationButtonState extends State<CommunicationButton> {
         developer.log('Erro ao tocar áudio customizado: $e', name: 'CommunicationButton', error: e);
       }
     } else {
-      await widget.tts.speak(widget.item.ttsText);
+      await widget.tts.speak(widget.tr.t(widget.item.id));
     }
 
     if (widget.onAdicionarFrase != null) {
@@ -101,7 +101,7 @@ class _CommunicationButtonState extends State<CommunicationButton> {
             const SizedBox(height: 12),
             if (mostrarTexto)
               Text(
-                widget.item.label,
+                widget.tr.t(widget.item.id),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 maxLines: 2,

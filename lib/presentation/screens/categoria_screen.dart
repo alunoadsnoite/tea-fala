@@ -85,7 +85,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                             final item = entry.value;
                             return Chip(
                               label: Text(
-                                '${item.emoji} ${widget.imagesOnly ? '' : item.label}',
+                                '${item.emoji} ${widget.imagesOnly ? '' : widget.tr.t(item.id)}',
                               ),
                               deleteIcon: const Icon(Icons.close, size: 18),
                               onDeleted: () => _removerDaFrase(i),
@@ -115,7 +115,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                           icon: const Icon(Icons.volume_up),
                           label: Text(widget.tr.t('readPhrase')),
                           onPressed: () async {
-                            final texto = _frase.map((i) => i.ttsText).join(', ');
+                            final texto = _frase.map((i) => widget.tr.t(i.id)).join(', ');
                             await widget.tts.speak(texto);
                           },
                         ),
@@ -154,7 +154,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
       floatingActionButton: _frase.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () async {
-                final texto = _frase.map((i) => i.ttsText).join(', ');
+                final texto = _frase.map((i) => widget.tr.t(i.id)).join(', ');
                 await widget.tts.speak(texto);
               },
               icon: const Icon(Icons.volume_up),

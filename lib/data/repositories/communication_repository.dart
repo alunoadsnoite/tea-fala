@@ -1,5 +1,5 @@
-/// Repositório de comunicação: dados estáticos de itens e categorias.
-/// Em uma versão futura, isso poderia vir de um banco local ou JSON.
+// Repositório de comunicação: dados estáticos de itens e categorias.
+// Em uma versão futura, isso poderia vir de um banco local ou JSON.
 import 'package:tea_fala/data/models/communication_item.dart';
 
 class CommunicationRepository {

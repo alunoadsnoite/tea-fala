@@ -53,6 +53,21 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
       setState(() {
         _tr = TranslationService(_language);
       });
+      // Aplicar idioma inicial ao TTS
+      await _tts.init();
+      await _tts.setLanguage(_ttsCodeFor(_language.language));
+    }
+  }
+
+  /// Mapeia o idioma do app para o código do TTS.
+  String _ttsCodeFor(AppLanguage lang) {
+    switch (lang) {
+      case AppLanguage.pt:
+        return 'pt-BR';
+      case AppLanguage.en:
+        return 'en-US';
+      case AppLanguage.es:
+        return 'es-ES';
     }
   }
 
@@ -61,6 +76,22 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
     setState(() {
       _imagesOnly = value;
     });
+  }
+
+  // Callback para mudança de idioma
+  void _onLanguageChanged(AppLanguage lang) async {
+    if (mounted) {
+      setState(() {});
+      await _tts.setLanguage(_ttsCodeFor(lang));
+    }
+  }
+
+  // Callback para mudança de tema
+  void _onThemeChanged(AppThemeMode mode) async {
+    if (mounted) {
+      setState(() {});
+      await _theme.setMode(mode);
+    }
   }
 
   @override
@@ -85,6 +116,11 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
         Locale('en', 'US'),
         Locale('es', 'ES'),
       ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       locale: _language.language.locale,
       home: HomeScreen(
         tts: _tts,
@@ -101,6 +137,8 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
               audioRecord: _audioRecord,
               imagesOnly: _imagesOnly,
               onImagesOnlyChanged: _onImagesOnlyChanged,
+              onLanguageChanged: _onLanguageChanged,
+              onThemeChanged: _onThemeChanged,
             ),
       },
     );
