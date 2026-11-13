@@ -9,6 +9,12 @@ import 'screens/home.dart';
 import 'screens/settings.dart';
 
 void main() {
+  // Captura erros não tratados para não travar silenciosamente
+  FlutterError.onError = (details) {
+    debugPrint('ERRO FLUTTER: ${details.exception}');
+    debugPrint('Stack: ${details.stack}');
+  };
+
   runApp(const TeaFalaApp());
 }
 
@@ -27,40 +33,36 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
   final LanguageService _language = LanguageService();
   final AudioRecordService _audioRecord = AudioRecordService();
 
-  TranslationService? _tr;
   bool _pronto = false;
+  String? _erro;
 
   @override
   void initState() {
     super.initState();
-    _inicializarBasico();
+    _inicializar();
   }
 
-  /// Inicialização mínima e segura — nunca trava a abertura do app.
-  Future<void> _inicializarBasico() async {
+  Future<void> _inicializar() async {
     try {
-      // Storage é leve e sempre funciona
       await _storage.init();
     } catch (e) {
-      debugPrint('Storage init falhou (não crítico): $e');
+      debugPrint('Storage falhou: $e');
     }
 
     try {
       await _theme.init();
     } catch (e) {
-      debugPrint('Theme init falhou (não crítico): $e');
+      debugPrint('Theme falhou: $e');
     }
 
     try {
       await _language.init();
     } catch (e) {
-      debugPrint('Language init falhou (não crítico): $e');
+      debugPrint('Language falhou: $e');
     }
 
-    // TTS e AudioRecord são inicializados lazy (sob demanda) para não travar o app
     if (mounted) {
       setState(() {
-        _tr = TranslationService(_language);
         _pronto = true;
       });
     }
@@ -75,9 +77,7 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Sempre mostra a tela, mesmo se _pronto for false
-    final tr = _tr ?? TranslationService(_language);
-    final language = _language;
+    final tr = TranslationService(_language);
 
     return MaterialApp(
       title: tr.t('appTitle'),
@@ -103,19 +103,23 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
         Locale('en', 'US'),
         Locale('es', 'ES'),
       ],
-      locale: language.locale,
-      home: HomeScreen(
-        tts: _tts,
-        storage: _storage,
-        theme: _theme,
-        language: language,
-        tr: tr,
-        audioRecord: _audioRecord,
-      ),
+      locale: _language.locale,
+      home: _pronto
+          ? HomeScreen(
+              tts: _tts,
+              storage: _storage,
+              theme: _theme,
+              language: _language,
+              tr: tr,
+              audioRecord: _audioRecord,
+            )
+          : const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
       routes: {
         '/settings': (_) => SettingsScreen(
               theme: _theme,
-              language: language,
+              language: _language,
               tr: tr,
               audioRecord: _audioRecord,
             ),
