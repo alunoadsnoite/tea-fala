@@ -2,7 +2,7 @@
 
 TEA Fala - Quadro de Comunicação Offline para o público TEA
 
-Um aplicativo Flutter para auxiliar pessoas com TEA (Transtorno do Espectro Autista) na comunicação alternativa e aumentativa (CAA/PEC), totalmente offline, sem conta e sem rastreamento.
+Um aplicativo Flutter, Dart e Kotlin para auxiliar pessoas com TEA (Transtorno do Espectro Autista) na comunicação alternativa e aumentativa (CAA/PEC), totalmente offline, sem conta e sem rastreamento.
 
 ## Funcionalidades
 
