@@ -28,6 +28,7 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
 
   TranslationService? _tr;
   bool _inicializado = false;
+  String? _erroInicializacao;
 
   @override
   void initState() {
@@ -36,11 +37,35 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
   }
 
   Future<void> _inicializar() async {
-    await _tts.init();
-    await _storage.init();
-    await _theme.init();
-    await _language.init();
-    await _audioRecord.init();
+    try {
+      await _tts.init();
+    } catch (e) {
+      debugPrint('Erro ao iniciar TTS: $e');
+    }
+
+    try {
+      await _storage.init();
+    } catch (e) {
+      debugPrint('Erro ao iniciar Storage: $e');
+    }
+
+    try {
+      await _theme.init();
+    } catch (e) {
+      debugPrint('Erro ao iniciar Theme: $e');
+    }
+
+    try {
+      await _language.init();
+    } catch (e) {
+      debugPrint('Erro ao iniciar Language: $e');
+    }
+
+    try {
+      await _audioRecord.init();
+    } catch (e) {
+      debugPrint('Erro ao iniciar AudioRecord: $e');
+    }
 
     if (mounted) {
       setState(() {
