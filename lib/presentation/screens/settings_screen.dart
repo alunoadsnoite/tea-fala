@@ -1,10 +1,6 @@
-import 'dart:developer' as developer;
-
 import 'package:flutter/material.dart';
 import 'package:tea_fala/core/language/language_service.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
-import 'package:tea_fala/core/theme/audio_player_service.dart';
-import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/core/theme/theme_service.dart';
 import 'package:tea_fala/data/repositories/contact_repository.dart';
 
@@ -13,7 +9,6 @@ class SettingsScreen extends StatefulWidget {
   final ThemeService theme;
   final LanguageService language;
   final TranslationService tr;
-  final AudioRecordService audioRecord;
   final bool imagesOnly;
   final ValueChanged<bool> onImagesOnlyChanged;
   final ValueChanged<AppLanguage> onLanguageChanged;
@@ -24,7 +19,6 @@ class SettingsScreen extends StatefulWidget {
     required this.theme,
     required this.language,
     required this.tr,
-    required this.audioRecord,
     required this.imagesOnly,
     required this.onImagesOnlyChanged,
     required this.onLanguageChanged,
@@ -36,9 +30,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String? _recordedPath;
-  bool _isRecording = false;
-  final AudioPlayerService _player = AudioPlayerService.instance;
 
   /// Abre o cliente de e-mail para contatar o desenvolvedor.
   Future<void> _contactDeveloper() async {
@@ -49,60 +40,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: Text(widget.tr.t('emailError')),
         ),
       );
-    }
-  }
-
-  /// Alterna gravação de áudio.
-  Future<void> _toggleRecording() async {
-    final isRecording = await widget.audioRecord.isRecording();
-
-    if (isRecording) {
-      final path = await widget.audioRecord.stop();
-      if (path != null && mounted) {
-        setState(() {
-          _recordedPath = path;
-          _isRecording = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.tr.t('audioRecorded')}\n$path'),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } else {
-      try {
-        final available = await widget.audioRecord.init();
-        if (!available) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(widget.tr.t('permissionMicrophone'))),
-            );
-          }
-          return;
-        }
-
-        final path = await widget.audioRecord.start();
-        if (path != null && mounted) {
-          setState(() {
-            _recordedPath = null;
-            _isRecording = true;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(widget.tr.t('recordStart')),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      } catch (e) {
-        developer.log('Erro na gravação: $e', name: 'SettingsScreen', error: e);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(widget.tr.t('errorRecording'))),
-          );
-        }
-      }
     }
   }
 
@@ -179,53 +116,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ),
-          const Divider(),
-
-          // Seção: Gravação de áudio
-          ListTile(
-            leading: const Icon(Icons.mic),
-            title: Text(widget.tr.t('recordAudio')),
-            trailing: ElevatedButton.icon(
-              icon: Icon(
-                _isRecording ? Icons.stop : Icons.mic,
-                color: Colors.white,
-              ),
-              label: Text(_isRecording ? widget.tr.t('recordStop') : widget.tr.t('recordStart')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isRecording ? Colors.red : Colors.green,
-              ),
-              onPressed: _toggleRecording,
-            ),
-          ),
-          if (_recordedPath != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.green),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${widget.tr.t('recordSaved')}\n$_recordedPath',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.play_arrow, color: Colors.blue),
-                    tooltip: widget.tr.t('playAudio'),
-                    onPressed: () => _player.play(_recordedPath!),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    tooltip: widget.tr.t('deleteAudio'),
-                    onPressed: () async {
-                      _player.stop();
-                      setState(() => _recordedPath = null);
-                    },
-                  ),
-                ],
-              ),
-            ),
           const Divider(),
 
           // Seção: Contato com desenvolvedor

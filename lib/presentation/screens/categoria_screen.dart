@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
 import 'package:tea_fala/core/theme/tts_service.dart';
-import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/data/models/communication_item.dart';
 import 'package:tea_fala/data/repositories/communication_repository.dart';
 import 'package:tea_fala/presentation/widgets/communication_button.dart';
@@ -10,7 +9,6 @@ import 'package:tea_fala/presentation/widgets/communication_button.dart';
 class CategoriaScreen extends StatefulWidget {
   final CommunicationCategory categoria;
   final TtsService tts;
-  final AudioRecordService audioRecord;
   final TranslationService tr;
   final bool imagesOnly;
   final ValueChanged<bool> onImagesOnlyChanged;
@@ -19,7 +17,6 @@ class CategoriaScreen extends StatefulWidget {
     super.key,
     required this.categoria,
     required this.tts,
-    required this.audioRecord,
     required this.tr,
     required this.imagesOnly,
     required this.onImagesOnlyChanged,
@@ -66,7 +63,8 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           if (_frase.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(16),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.3),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -74,7 +72,10 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                     children: [
                       const Text(
                         'Frase: ',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                       Expanded(
                         child: Wrap(
@@ -115,7 +116,9 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                           icon: const Icon(Icons.volume_up),
                           label: Text(widget.tr.t('readPhrase')),
                           onPressed: () async {
-                            final texto = _frase.map((i) => widget.tr.t(i.id)).join(', ');
+                            final texto = _frase
+                                .map((i) => widget.tr.t(i.id))
+                                .join(', ');
                             await widget.tts.speak(texto);
                           },
                         ),
@@ -127,24 +130,43 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
             ),
           // Grade de ícones
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.85,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: itens.length,
-              itemBuilder: (context, index) {
-                final item = itens[index];
-                return CommunicationButton(
-                  item: item,
-                  tts: widget.tts,
-                  imagesOnly: widget.imagesOnly,
-                  onAdicionarFrase: () => _adicionarFrase(item),
-                  audioRecord: widget.audioRecord,
-                  tr: widget.tr,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final fontSize = MediaQuery.textScalerOf(context).scale(16);
+                final columns =
+                    constraints.maxWidth < 320 ||
+                        (!widget.imagesOnly && fontSize > 20)
+                    ? 2
+                    : 3;
+                final tileWidth =
+                    (constraints.maxWidth - 32 - (columns - 1) * 12) / columns;
+                final minHeight = widget.imagesOnly
+                    ? 80.0
+                    : 82 + fontSize * 3.6;
+                return GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    mainAxisExtent: (tileWidth / 0.85).clamp(
+                      minHeight,
+                      double.infinity,
+                    ),
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: itens.length,
+                  itemBuilder: (context, index) {
+                    final item = itens[index];
+                    return CommunicationButton(
+                      item: item,
+                      tts: widget.tts,
+                      imagesOnly: widget.imagesOnly,
+                      onAdicionarFrase: () {
+                        if (mounted) _adicionarFrase(item);
+                      },
+                      tr: widget.tr,
+                    );
+                  },
                 );
               },
             ),

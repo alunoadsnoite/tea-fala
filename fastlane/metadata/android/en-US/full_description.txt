@@ -1,0 +1,3 @@
+TEA Fala is an augmentative and alternative communication board. Tap picture cards to express needs, people, emotions, places and actions. Combine cards into a phrase or type your own text and listen to it.
+
+The app supports Portuguese, English and Spanish, light and dark themes, and a pictures-only mode. It works without an account. Text-to-speech uses the voices available on Android.

@@ -6,12 +6,11 @@ Um aplicativo Flutter, Dart e Kotlin para auxiliar pessoas com TEA (Transtorno d
 
 ## Funcionalidades
 
-- **Quadro de comunicação**: 32 ícones organizados em 5 categorias (Necessidades, Pessoas, Emoções, Lugares, Ações)
-- **Síntese de fala (TTS)**: fala em português do Brasil, velocidade reduzida para melhor compreensão
+- **Quadro de comunicação**: 54 ícones organizados em 5 categorias (Necessidades, Pessoas, Emoções, Lugares, Ações)
+- **Síntese de fala (TTS)**: fala em português do Brasil, inglês ou espanhol, velocidade reduzida para melhor compreensão
 - **Frase completa**: monta frases tocando ícones e lê tudo junto
 - **Texto livre**: digite qualquer texto e ouça em voz alta
 - **Configurações**: tema claro/escuro/automático, idiomas (Português/Inglês/Espanhol)
-- **Gravação de áudio próprio**: grave suas próprias vozes pelo microfone
 - **Modo somente imagens**: exibe apenas ícones, sem textos
 - **Contato com desenvolvedor**: envie e-mail diretamente pelo app
 

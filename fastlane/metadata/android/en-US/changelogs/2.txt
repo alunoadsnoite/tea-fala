@@ -1,0 +1,1 @@
+Added 25 cards across five categories, accessible labels in pictures-only mode, and more space for enlarged text. Removed recording controls and microphone permission. Text-to-speech remains available.

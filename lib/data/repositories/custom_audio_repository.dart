@@ -29,32 +29,9 @@ class CustomAudioRepository {
     }
   }
 
-  /// Salva/atualiza o áudio personalizado de um item.
-  Future<void> save(String itemId, String path) async {
-    final map = await _load();
-    map[itemId] = path;
-    final prefs = await _getPrefs();
-    await prefs.setString(_key, jsonEncode(map));
-  }
-
-  /// Remove o áudio personalizado de um item.
-  Future<void> remove(String itemId) async {
-    final map = await _load();
-    if (map.remove(itemId) != null) {
-      final prefs = await _getPrefs();
-      await prefs.setString(_key, jsonEncode(map));
-    }
-  }
-
-  /// Retorna o caminho do áudio personalizado (ou null).
+  /// Recupera o caminho associado ao cartão em versões anteriores do app.
   Future<String?> get(String itemId) async {
     final map = await _load();
     return map[itemId];
-  }
-
-  /// Verifica se o item tem áudio personalizado.
-  Future<bool> has(String itemId) async {
-    final map = await _load();
-    return map.containsKey(itemId);
   }
 }

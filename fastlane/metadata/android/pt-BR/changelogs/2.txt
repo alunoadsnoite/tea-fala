@@ -1,0 +1,1 @@
+25 novos cartões nas cinco categorias. Rótulos acessíveis no modo somente imagens e melhor espaço para fontes ampliadas. Remoção dos controles de gravação e da permissão de microfone. A síntese de fala continua disponível.
