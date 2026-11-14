@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:tea_fala/core/language/language_service.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
+import 'package:tea_fala/core/theme/audio_player_service.dart';
 import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/core/theme/theme_service.dart';
 import 'package:tea_fala/data/repositories/contact_repository.dart';
@@ -36,6 +37,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String? _recordedPath;
+  bool _isRecording = false;
+  final AudioPlayerService _player = AudioPlayerService.instance;
 
   /// Abre o cliente de e-mail para contatar o desenvolvedor.
   Future<void> _contactDeveloper() async {
@@ -43,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Não foi possível abrir o e-mail: ${ContactService.developerEmail}'),
+          content: Text(widget.tr.t('emailError')),
         ),
       );
     }
@@ -58,6 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (path != null && mounted) {
         setState(() {
           _recordedPath = path;
+          _isRecording = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -82,6 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (path != null && mounted) {
           setState(() {
             _recordedPath = null;
+            _isRecording = true;
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -181,9 +186,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.mic),
             title: Text(widget.tr.t('recordAudio')),
             trailing: ElevatedButton.icon(
-              icon: const Icon(Icons.mic, color: Colors.white),
-              label: Text(widget.tr.t('recordStart')),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              icon: Icon(
+                _isRecording ? Icons.stop : Icons.mic,
+                color: Colors.white,
+              ),
+              label: Text(_isRecording ? widget.tr.t('recordStop') : widget.tr.t('recordStart')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isRecording ? Colors.red : Colors.green,
+              ),
               onPressed: _toggleRecording,
             ),
           ),
@@ -199,6 +209,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       '${widget.tr.t('recordSaved')}\n$_recordedPath',
                       style: const TextStyle(fontSize: 12),
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.play_arrow, color: Colors.blue),
+                    tooltip: widget.tr.t('playAudio'),
+                    onPressed: () => _player.play(_recordedPath!),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    tooltip: widget.tr.t('deleteAudio'),
+                    onPressed: () async {
+                      _player.stop();
+                      setState(() => _recordedPath = null);
+                    },
                   ),
                 ],
               ),

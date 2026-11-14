@@ -13,6 +13,7 @@ class AudioRecordService {
   bool _available = false;
 
   bool get isAvailable => _available;
+  String? get currentPath => _currentPath;
 
   /// Inicializa e solicita permissão do microfone.
   /// Retorna true se o microfone está disponível.
@@ -37,21 +38,33 @@ class AudioRecordService {
     }
   }
 
+  /// Gera um nome de arquivo único com extensão .m4a.
+  Future<String> _newPath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final name = 'tea_fala_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    return '${dir.path}/$name';
+  }
+
   /// Inicia a gravação. Retorna o caminho do arquivo ou null se falhar.
   Future<String?> start() async {
     if (!_available) return null;
     if (await isRecording()) return _currentPath;
 
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      final fileName = 'tea_fala_audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
-      _currentPath = '${dir.path}/$fileName';
+      final path = await _newPath();
+      _currentPath = path;
 
       await _recorder.start(
-        const RecordConfig(),
-        path: _currentPath ?? '',
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          bitRate: 128000,
+          sampleRate: 44100,
+          numChannels: 1,
+        ),
+        path: path,
       );
-      return _currentPath;
+      developer.log('Gravação iniciada em $path', name: 'AudioRecordService');
+      return path;
     } catch (e) {
       developer.log('Erro ao iniciar gravação: $e', name: 'AudioRecordService', error: e);
       return null;
@@ -63,8 +76,10 @@ class AudioRecordService {
     if (!(await isRecording())) return null;
     try {
       final path = await _recorder.stop();
-      _currentPath = path;
-      return path;
+      // Alguns dispositivos retornam null; usa o caminho gerado como fallback.
+      _currentPath = path ?? _currentPath;
+      developer.log('Gravação salva em $_currentPath', name: 'AudioRecordService');
+      return _currentPath;
     } catch (e) {
       developer.log('Erro ao parar gravação: $e', name: 'AudioRecordService', error: e);
       return null;

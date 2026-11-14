@@ -15,15 +15,22 @@ class ContactService {
     final subject = Uri.encodeComponent('Contato - TEA Fala');
     final body = Uri.encodeComponent('Olá Valdenor,\n\n');
     final url = 'mailto:$email?subject=$subject&body=$body';
+    final uri = Uri.parse(url);
 
     try {
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url));
+      // Primeiro tenta verificar se há um handler para mailto.
+      final canLaunch = await canLaunchUrl(uri);
+      if (canLaunch) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
         return true;
       }
+      // Alguns dispositivos reportam false mesmo com app instalado;
+      // tenta abrir diretamente como fallback.
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return true;
     } catch (e) {
       debugPrint('Erro ao abrir e-mail: $e');
+      return false;
     }
-    return false;
   }
 }
