@@ -3,6 +3,7 @@ import 'package:tea_fala/core/language/language_service.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
 import 'package:tea_fala/core/theme/theme_service.dart';
 import 'package:tea_fala/data/repositories/contact_repository.dart';
+import 'package:tea_fala/data/repositories/custom_audio_repository.dart';
 
 /// Tela de Configurações do TEA Fala.
 class SettingsScreen extends StatefulWidget {
@@ -30,6 +31,38 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+
+  Future<void> _deleteLegacyAudio() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(widget.tr.t('deleteLegacyAudio')),
+        content: Text(widget.tr.t('deleteLegacyAudioConfirm')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(widget.tr.t('cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(widget.tr.t('delete')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    var result = 'legacyAudioDeleted';
+    try {
+      await CustomAudioRepository.instance.deleteLegacyRecordings();
+    } catch (_) {
+      result = 'legacyAudioDeleteError';
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.tr.t(result))),
+      );
+    }
+  }
 
   /// Abre o cliente de e-mail para contatar o desenvolvedor.
   Future<void> _contactDeveloper() async {
@@ -115,6 +148,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (mounted) setState(() {});
               },
             ),
+          ),
+          const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: Text(widget.tr.t('privacy')),
+            subtitle: Text(widget.tr.t('privacyNotice')),
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_outline),
+            title: Text(widget.tr.t('deleteLegacyAudio')),
+            onTap: _deleteLegacyAudio,
           ),
           const Divider(),
 

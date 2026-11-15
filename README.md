@@ -2,7 +2,7 @@
 
 TEA Fala - Quadro de Comunicação Offline para o público TEA
 
-Um aplicativo Flutter, Dart e Kotlin para auxiliar pessoas com TEA (Transtorno do Espectro Autista) na comunicação alternativa e aumentativa (CAA/PEC), totalmente offline, sem conta e sem rastreamento.
+Um aplicativo Flutter, Dart e Kotlin para auxiliar pessoas com TEA (Transtorno do Espectro Autista) na comunicação aumentativa e alternativa (CAA), sem conta e sem rastreamento. O quadro funciona offline.
 
 ## Funcionalidades
 
@@ -16,10 +16,11 @@ Um aplicativo Flutter, Dart e Kotlin para auxiliar pessoas com TEA (Transtorno d
 
 ## Privacidade
 
-- 100% offline — não requer internet
-- Sem conta, sem cadastro
-- Sem rastreamento, sem telemetria
-- Todos os dados ficam no dispositivo
+- O quadro funciona sem internet. Ao usar a voz sintetizada, o texto é entregue ao serviço de voz do Android. O funcionamento offline depende da voz instalada no aparelho e do serviço selecionado.
+- O aplicativo guarda preferências e pode reproduzir áudios gravados por versões anteriores. A versão atual não usa o microfone. Em **Configurações**, você pode apagar essas gravações locais.
+- O app solicita ao Android que exclua seus dados de backups automáticos e transferências entre aparelhos. Excluir gravações locais não apaga cópias feitas anteriormente.
+- Falar com o desenvolvedor abre o aplicativo de e-mail. Você escolhe o que escrever e se quer enviar. Evite incluir diagnósticos, gravações ou dados de crianças.
+- O app não exige conta e não usa publicidade nem rastreamento.
 
 ## Tecnologia
 

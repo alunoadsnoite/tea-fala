@@ -8,6 +8,13 @@ class TranslationService {
 
   static final Map<String, Map<String, String>> _translations = {
     'pt': {
+      'privacy': 'Privacidade',
+      'privacyNotice': 'O texto lido em voz alta vai para o serviço de voz do Android. Para usar a fala sem internet, escolha uma voz offline nas configurações do aparelho. Ao fazer contato por e-mail, evite enviar dados de crianças.',
+      'deleteLegacyAudio': 'Apagar gravações antigas',
+      'deleteLegacyAudioConfirm': 'Apagar os áudios gravados em versões anteriores neste aparelho? Os cartões voltam a usar a voz sintetizada.',
+      'delete': 'Apagar',
+      'legacyAudioDeleted': 'Gravações antigas apagadas deste aparelho.',
+      'legacyAudioDeleteError': 'Não foi possível apagar todas as gravações. Tente novamente.',
       'appTitle': 'TEA Fala',
       'home': 'Início',
       'settings': 'Configurações',
@@ -94,6 +101,13 @@ class TranslationService {
       'trocar_roupa': "Vou trocar de roupa",
     },
     'en': {
+      'privacy': 'Privacy',
+      'privacyNotice': 'Text read aloud goes to the Android speech service. To use speech offline, choose an offline voice in your device settings. When contacting us by email, avoid sending children’s data.',
+      'deleteLegacyAudio': 'Delete old recordings',
+      'deleteLegacyAudioConfirm': 'Delete recordings from older versions on this device? The cards will use synthesized speech again.',
+      'delete': 'Delete',
+      'legacyAudioDeleted': 'Old recordings deleted from this device.',
+      'legacyAudioDeleteError': 'Some recordings could not be deleted. Try again.',
       'appTitle': 'TEA Speaks',
       'home': 'Home',
       'settings': 'Settings',
@@ -179,6 +193,13 @@ class TranslationService {
       'trocar_roupa': "I’ll change clothes",
     },
     'es': {
+      'privacy': 'Privacidad',
+      'privacyNotice': 'El texto leído en voz alta se envía al servicio de voz de Android. Para usar la voz sin internet, elige una voz sin conexión en los ajustes del dispositivo. Si escribes por correo, evita enviar datos de menores.',
+      'deleteLegacyAudio': 'Borrar grabaciones antiguas',
+      'deleteLegacyAudioConfirm': '¿Borrar las grabaciones de versiones anteriores en este dispositivo? Las tarjetas volverán a usar la voz sintetizada.',
+      'delete': 'Borrar',
+      'legacyAudioDeleted': 'Grabaciones antiguas borradas de este dispositivo.',
+      'legacyAudioDeleteError': 'No se pudieron borrar todas las grabaciones. Inténtalo de nuevo.',
       'appTitle': 'TEA Habla',
       'home': 'Inicio',
       'settings': 'Configuración',

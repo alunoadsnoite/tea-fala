@@ -61,71 +61,82 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
         children: [
           // Barra da frase montada
           if (_frase.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.3),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.45,
+              ),
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Frase: ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Expanded(
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: _frase.asMap().entries.map((entry) {
-                            final i = entry.key;
-                            final item = entry.value;
-                            return Chip(
-                              label: Text(
-                                '${item.emoji} ${widget.imagesOnly ? '' : widget.tr.t(item.id)}',
-                              ),
-                              deleteIcon: const Icon(Icons.close, size: 18),
-                              onDeleted: () => _removerDaFrase(i),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.delete),
-                          label: Text(widget.tr.t('clear')),
-                          onPressed: _limparFrase,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent,
-                            foregroundColor: Colors.white,
+                      Row(
+                        children: [
+                          Text(
+                            widget.tr.t('phrase'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: _frase.asMap().entries.map((entry) {
+                                final i = entry.key;
+                                final item = entry.value;
+                                return Chip(
+                                  label: Text(
+                                    widget.imagesOnly
+                                        ? item.emoji
+                                        : '${item.emoji} ${widget.tr.t(item.id)}',
+                                    semanticsLabel: widget.tr.t(item.id),
+                                  ),
+                                  deleteIcon: const Icon(Icons.close, size: 18),
+                                  onDeleted: () => _removerDaFrase(i),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.volume_up),
-                          label: Text(widget.tr.t('readPhrase')),
-                          onPressed: () async {
-                            final texto = _frase
-                                .map((i) => widget.tr.t(i.id))
-                                .join(', ');
-                            await widget.tts.speak(texto);
-                          },
-                        ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.delete),
+                              label: Text(widget.tr.t('clear')),
+                              onPressed: _limparFrase,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.volume_up),
+                              label: Text(widget.tr.t('readPhrase')),
+                              onPressed: () async {
+                                final texto = _frase
+                                    .map((i) => widget.tr.t(i.id))
+                                    .join(', ');
+                                await widget.tts.speak(texto);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           // Grade de ícones
@@ -173,16 +184,6 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           ),
         ],
       ),
-      floatingActionButton: _frase.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final texto = _frase.map((i) => widget.tr.t(i.id)).join(', ');
-                await widget.tts.speak(texto);
-              },
-              icon: const Icon(Icons.volume_up),
-              label: Text(widget.tr.t('readPhrase')),
-            )
-          : null,
     );
   }
 }

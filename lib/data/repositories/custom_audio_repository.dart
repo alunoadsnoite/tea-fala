@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +29,22 @@ class CustomAudioRepository {
       return decoded.map((k, v) => MapEntry(k, v.toString()));
     } catch (_) {
       return {};
+    }
+  }
+
+  /// Remove gravações do recurso antigo, inclusive arquivos sem cartão associado.
+  Future<void> deleteLegacyRecordings() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final recordingName = RegExp(r'^tea_fala_[0-9]+[.]m4a$');
+    await for (final entry in directory.list(followLinks: false)) {
+      final name = entry.uri.pathSegments.last;
+      if (entry is File && recordingName.hasMatch(name)) {
+        await entry.delete();
+      }
+    }
+    final prefs = await _getPrefs();
+    if (!await prefs.remove(_key)) {
+      throw StateError('Não foi possível apagar as referências dos áudios.');
     }
   }
 
