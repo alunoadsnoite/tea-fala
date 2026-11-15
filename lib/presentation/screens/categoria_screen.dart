@@ -51,6 +51,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
   Widget build(BuildContext context) {
     final repo = CommunicationRepository.instance;
     final itens = repo.itemsByCategory(widget.categoria.id);
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -114,8 +115,8 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                               label: Text(widget.tr.t('clear')),
                               onPressed: _limparFrase,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent,
-                                foregroundColor: Colors.white,
+                                backgroundColor: colors.error,
+                                foregroundColor: colors.onError,
                               ),
                             ),
                           ),
