@@ -42,7 +42,10 @@ void main() {
     await tester.tap(find.text('Necessidades'));
     await tester.pumpAndSettle();
 
-    final card = find.bySemanticsLabel('Quero uma pausa');
+    final card = find.descendant(
+      of: find.byType(GridView),
+      matching: find.bySemanticsLabel('Quero uma pausa'),
+    );
     await tester.scrollUntilVisible(card.hitTestable(), 150);
     expect(find.text('Quero uma pausa'), findsNothing);
     await tester.tap(card);
@@ -52,6 +55,32 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Ler a frase'));
     await tester.pumpAndSettle();
     expect(spoken, ['Quero uma pausa', 'Quero uma pausa']);
+
+    // A long phrase must leave space to keep using the cards on a short screen.
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 320);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpAndSettle();
+    final grid = find.byType(GridView);
+    final gridScroll = find.descendant(
+      of: grid,
+      matching: find.byType(Scrollable),
+    );
+    tester.state<ScrollableState>(gridScroll).position.jumpTo(0);
+    await tester.pumpAndSettle();
+    final firstCard = find.descendant(
+      of: grid,
+      matching: find.bySemanticsLabel('Tenho fome'),
+    );
+    for (var i = 0; i < 18; i++) {
+      expect(firstCard.hitTestable(), findsOneWidget);
+      await tester.tap(firstCard.hitTestable());
+      await tester.pumpAndSettle();
+    }
+    expect(spoken, hasLength(20));
+    expect(tester.takeException(), isNull);
+
     semantics.dispose();
   });
 
