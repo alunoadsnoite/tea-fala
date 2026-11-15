@@ -1,0 +1,1 @@
+Exclusão de gravações antigas e melhorias de privacidade, contraste e uso em telas baixas.
