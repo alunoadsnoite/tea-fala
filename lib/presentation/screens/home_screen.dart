@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
+import 'package:tea_fala/core/theme/app_state_notifier.dart';
 import 'package:tea_fala/core/theme/tts_service.dart';
+import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/data/repositories/communication_repository.dart';
 import 'package:tea_fala/presentation/screens/categoria_screen.dart';
 import 'package:tea_fala/presentation/screens/frase_screen.dart';
@@ -8,16 +10,16 @@ import 'package:tea_fala/presentation/screens/frase_screen.dart';
 /// Tela inicial: grid de categorias de comunicação.
 class HomeScreen extends StatelessWidget {
   final TtsService tts;
+  final AudioRecordService audioRecord;
+  final AppStateNotifier appState;
   final TranslationService tr;
-  final bool imagesOnly;
-  final ValueChanged<bool> onImagesOnlyChanged;
 
   const HomeScreen({
     super.key,
     required this.tts,
+    required this.audioRecord,
+    required this.appState,
     required this.tr,
-    required this.imagesOnly,
-    required this.onImagesOnlyChanged,
   });
 
   @override
@@ -59,9 +61,9 @@ class HomeScreen extends StatelessWidget {
                   builder: (_) => CategoriaScreen(
                     categoria: cat,
                     tts: tts,
+                    audioRecord: audioRecord,
+                    appState: appState,
                     tr: tr,
-                    imagesOnly: imagesOnly,
-                    onImagesOnlyChanged: onImagesOnlyChanged,
                   ),
                 ),
               );

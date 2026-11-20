@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
+import 'package:tea_fala/core/theme/app_state_notifier.dart';
+import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/core/theme/tts_service.dart';
 import 'package:tea_fala/data/models/communication_item.dart';
 import 'package:tea_fala/data/repositories/communication_repository.dart';
 import 'package:tea_fala/presentation/widgets/communication_button.dart';
+import 'package:tea_fala/presentation/screens/frase_screen.dart';
 
 /// Tela de uma categoria: grade de ícones de comunicação.
 class CategoriaScreen extends StatefulWidget {
   final CommunicationCategory categoria;
   final TtsService tts;
+  final AudioRecordService audioRecord;
+  final AppStateNotifier appState;
   final TranslationService tr;
-  final bool imagesOnly;
-  final ValueChanged<bool> onImagesOnlyChanged;
 
   const CategoriaScreen({
     super.key,
     required this.categoria,
     required this.tts,
+    required this.audioRecord,
+    required this.appState,
     required this.tr,
-    required this.imagesOnly,
-    required this.onImagesOnlyChanged,
   });
 
   @override
@@ -93,7 +96,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                                 final item = entry.value;
                                 return Chip(
                                   label: Text(
-                                    widget.imagesOnly
+                                    widget.appState.imagesOnly
                                         ? item.emoji
                                         : '${item.emoji} ${widget.tr.t(item.id)}',
                                     semanticsLabel: widget.tr.t(item.id),
@@ -147,12 +150,12 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                 final fontSize = MediaQuery.textScalerOf(context).scale(16);
                 final columns =
                     constraints.maxWidth < 320 ||
-                        (!widget.imagesOnly && fontSize > 20)
+                        (!widget.appState.imagesOnly && fontSize > 20)
                     ? 2
                     : 3;
                 final tileWidth =
                     (constraints.maxWidth - 32 - (columns - 1) * 12) / columns;
-                final minHeight = widget.imagesOnly
+                final minHeight = widget.appState.imagesOnly
                     ? 80.0
                     : 82 + fontSize * 3.6;
                 return GridView.builder(
@@ -172,7 +175,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                     return CommunicationButton(
                       item: item,
                       tts: widget.tts,
-                      imagesOnly: widget.imagesOnly,
+                      imagesOnly: widget.appState.imagesOnly,
                       onAdicionarFrase: () {
                         if (mounted) _adicionarFrase(item);
                       },
@@ -185,6 +188,16 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           ),
         ],
       ),
+      floatingActionButton: _frase.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final texto = _frase.map((i) => widget.tr.t(i.id)).join(', ');
+                await widget.tts.speak(texto);
+              },
+              icon: const Icon(Icons.volume_up),
+              label: Text(widget.tr.t('readPhrase')),
+            )
+          : null,
     );
   }
 }

@@ -53,4 +53,26 @@ class CustomAudioRepository {
     final map = await _load();
     return map[itemId];
   }
+
+  /// Salva o caminho de um áudio gravado para um item específico.
+  Future<void> save(String itemId, String filePath) async {
+    final map = await _load();
+    map[itemId] = filePath;
+    final prefs = await _getPrefs();
+    await prefs.setString(_key, jsonEncode(map));
+  }
+
+  /// Remove o áudio associado a um item específico (arquivo e referência).
+  Future<void> remove(String itemId) async {
+    final path = await get(itemId);
+    if (path != null) {
+      try {
+        await File(path).delete();
+      } catch (_) {}
+    }
+    final map = await _load();
+    map.remove(itemId);
+    final prefs = await _getPrefs();
+    await prefs.setString(_key, jsonEncode(map));
+  }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tea_fala/core/theme/app_theme.dart';
+import 'package:tea_fala/core/theme/app_state_notifier.dart';
 import 'package:tea_fala/core/theme/theme_service.dart';
 import 'package:tea_fala/core/theme/tts_service.dart';
+import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/core/language/language_service.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
 import 'package:tea_fala/presentation/screens/home_screen.dart';
@@ -26,15 +28,15 @@ class TeaFalaApp extends StatefulWidget {
 }
 
 class _TeaFalaAppState extends State<TeaFalaApp> {
-  // Serviços singleton (inicialização lazy)
+  // Serviços singleton (inicialização lazy e defensiva)
   final ThemeService _theme = ThemeService.instance;
   final LanguageService _language = LanguageService.instance;
   final TtsService _tts = TtsService.instance;
+  final AudioRecordService _audioRecord = AudioRecordService.instance;
+  final AppStateNotifier _appState = AppStateNotifier.instance;
 
   TranslationService? _tr;
-
-  // Estado compartilhado para o modo "somente imagens"
-  bool _imagesOnly = false;
+  bool _pronto = false;
 
   @override
   void initState() {
@@ -46,12 +48,13 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
     // Inicialização mínima e segura - nunca trava a abertura do app.
     await _theme.init();
     await _language.init();
-    // O TTS é inicializado separadamente.
+    await _appState.init();
+    // TTS e áudio são inicializados lazy (sob demanda)
     if (mounted) {
       setState(() {
         _tr = TranslationService(_language);
+        _pronto = true;
       });
-      // Aplicar idioma inicial ao TTS
       await _tts.init();
       await _tts.setLanguage(_ttsCodeFor(_language.language));
     }
@@ -69,14 +72,7 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
     }
   }
 
-  // Callback para atualizar o estado compartilhado
-  void _onImagesOnlyChanged(bool value) {
-    setState(() {
-      _imagesOnly = value;
-    });
-  }
-
-  // Callback para mudança de idioma
+  /// Callback para mudança de idioma
   void _onLanguageChanged(AppLanguage lang) async {
     if (mounted) {
       setState(() {});
@@ -84,7 +80,7 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
     }
   }
 
-  // Callback para mudança de tema
+  /// Callback para mudança de tema
   void _onThemeChanged(AppThemeMode mode) async {
     if (mounted) {
       setState(() {});
@@ -95,6 +91,7 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
   @override
   void dispose() {
     _tts.dispose();
+    _audioRecord.dispose();
     super.dispose();
   }
 
@@ -121,17 +118,17 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
       locale: _language.language.locale,
       home: HomeScreen(
         tts: _tts,
+        audioRecord: _audioRecord,
+        appState: _appState,
         tr: tr,
-        imagesOnly: _imagesOnly,
-        onImagesOnlyChanged: _onImagesOnlyChanged,
       ),
       routes: {
         '/settings': (_) => SettingsScreen(
               theme: _theme,
               language: _language,
+              appState: _appState,
               tr: tr,
-              imagesOnly: _imagesOnly,
-              onImagesOnlyChanged: _onImagesOnlyChanged,
+              audioRecord: _audioRecord,
               onLanguageChanged: _onLanguageChanged,
               onThemeChanged: _onThemeChanged,
             ),

@@ -1,6 +1,10 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:tea_fala/core/language/language_service.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
+import 'package:tea_fala/core/theme/app_state_notifier.dart';
+import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/core/theme/theme_service.dart';
 import 'package:tea_fala/data/repositories/contact_repository.dart';
 import 'package:tea_fala/data/repositories/custom_audio_repository.dart';
@@ -9,9 +13,9 @@ import 'package:tea_fala/data/repositories/custom_audio_repository.dart';
 class SettingsScreen extends StatefulWidget {
   final ThemeService theme;
   final LanguageService language;
+  final AppStateNotifier appState;
   final TranslationService tr;
-  final bool imagesOnly;
-  final ValueChanged<bool> onImagesOnlyChanged;
+  final AudioRecordService audioRecord;
   final ValueChanged<AppLanguage> onLanguageChanged;
   final ValueChanged<AppThemeMode> onThemeChanged;
 
@@ -19,9 +23,9 @@ class SettingsScreen extends StatefulWidget {
     super.key,
     required this.theme,
     required this.language,
+    required this.appState,
     required this.tr,
-    required this.imagesOnly,
-    required this.onImagesOnlyChanged,
+    required this.audioRecord,
     required this.onLanguageChanged,
     required this.onThemeChanged,
   });
@@ -31,6 +35,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _isRecording = false;
+  String? _recordedPath;
 
   Future<void> _deleteLegacyAudio() async {
     final confirmed = await showDialog<bool>(
@@ -73,6 +79,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: Text(widget.tr.t('emailError')),
         ),
       );
+    }
+  }
+
+  /// Alterna gravação de áudio.
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      final path = await widget.audioRecord.stop();
+      if (path != null && mounted) {
+        setState(() {
+          _isRecording = false;
+          _recordedPath = path;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${widget.tr.t('audioRecorded')}\n$path'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } else {
+      try {
+        final available = await widget.audioRecord.init();
+        if (!available) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(widget.tr.t('permissionMicrophone'))),
+            );
+          }
+          return;
+        }
+
+        final path = await widget.audioRecord.start();
+        if (path != null && mounted) {
+          setState(() {
+            _isRecording = true;
+            _recordedPath = null;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.tr.t('recordStart')),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        developer.log('Erro na gravação: $e', name: 'SettingsScreen', error: e);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(widget.tr.t('errorRecording'))),
+          );
+        }
+      }
     }
   }
 
@@ -142,15 +200,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text(widget.tr.t('imagesOnlyMode')),
             subtitle: Text(widget.tr.t('imagesOnlyModeDescription')),
             trailing: Switch(
-              value: widget.imagesOnly,
-              onChanged: (value) {
-                widget.onImagesOnlyChanged(value);
-                if (mounted) setState(() {});
+              value: widget.appState.imagesOnly,
+              onChanged: (value) async {
+                await widget.appState.setImagesOnly(value);
               },
             ),
           ),
           const Divider(),
 
+          // Seção: Gravação de áudio
+          ListTile(
+            leading: const Icon(Icons.mic),
+            title: Text(widget.tr.t('recordAudio')),
+            subtitle: Text(
+              _isRecording
+                  ? widget.tr.t('recordStop')
+                  : widget.tr.t('recordStart'),
+            ),
+            trailing: ElevatedButton.icon(
+              icon: Icon(
+                _isRecording ? Icons.stop : Icons.mic,
+                color: Colors.white,
+              ),
+              label: Text(
+                _isRecording
+                    ? widget.tr.t('recordStop')
+                    : widget.tr.t('recordStart'),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isRecording ? Colors.red : Colors.green,
+              ),
+              onPressed: _toggleRecording,
+            ),
+          ),
+          if (_recordedPath != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${widget.tr.t('recordSaved')}\n$_recordedPath',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const Divider(),
+
+          // Seção: Privacidade
           ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
             title: Text(widget.tr.t('privacy')),
