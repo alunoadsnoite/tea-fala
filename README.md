@@ -69,3 +69,7 @@ Sugestões, traduções e relatos de problemas são bem-vindos. Abra uma issue c
 ## Verificações automáticas
 
 O GitHub Actions está configurado para executar análise estática, testes e compilação Android de debug nos pushes e pull requests. Acompanhe os resultados na aba Actions do repositório.
+
+## Identidade visual
+
+O ícone usa a letra **F** com o infinito entrelaçado, no mesmo estilo do TEA Passos. A imagem original aprovada está em `assets/icon-source.png`; as versões do lançador Android e dos catálogos em português e inglês derivam dela. O ícone adaptável inclui margem para as máscaras dos lançadores.
