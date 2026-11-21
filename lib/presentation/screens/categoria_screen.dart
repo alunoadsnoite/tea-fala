@@ -6,7 +6,6 @@ import 'package:tea_fala/core/theme/tts_service.dart';
 import 'package:tea_fala/data/models/communication_item.dart';
 import 'package:tea_fala/data/repositories/communication_repository.dart';
 import 'package:tea_fala/presentation/widgets/communication_button.dart';
-import 'package:tea_fala/presentation/screens/frase_screen.dart';
 
 /// Tela de uma categoria: grade de ícones de comunicação.
 class CategoriaScreen extends StatefulWidget {

@@ -1,7 +1,6 @@
 import 'dart:developer' as developer;
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
@@ -14,7 +13,6 @@ class AudioRecordService {
   final AudioRecorder _recorder = AudioRecorder();
   String? _currentPath;
   bool _available = false;
-  bool _permissionRequested = false;
 
   bool get isAvailable => _available;
 
@@ -23,7 +21,6 @@ class AudioRecordService {
   Future<bool> init() async {
     try {
       _available = await _recorder.hasPermission(request: true);
-      _permissionRequested = true;
       developer.log('Áudio disponível: $_available', name: 'AudioRecordService');
     } catch (e, stack) {
       _available = false;

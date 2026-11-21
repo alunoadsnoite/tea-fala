@@ -36,7 +36,6 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
   final AppStateNotifier _appState = AppStateNotifier.instance;
 
   TranslationService? _tr;
-  bool _pronto = false;
 
   @override
   void initState() {
@@ -53,7 +52,6 @@ class _TeaFalaAppState extends State<TeaFalaApp> {
     if (mounted) {
       setState(() {
         _tr = TranslationService(_language);
-        _pronto = true;
       });
       await _tts.init();
       await _tts.setLanguage(_ttsCodeFor(_language.language));

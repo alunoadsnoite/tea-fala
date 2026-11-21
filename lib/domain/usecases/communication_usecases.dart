@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tea_fala/domain/entities/communication_entities.dart';
 
 /// Use case para obter todas as categorias de comunicação.
