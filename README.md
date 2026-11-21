@@ -65,3 +65,7 @@ Valdenor — valdenor.sa@proton.me
 ## Como contribuir
 
 Sugestões, traduções e relatos de problemas são bem-vindos. Abra uma issue com o contexto e o comportamento esperado. Para alterações de código, explique a mudança e os testes realizados no pull request. Use dados fictícios nos exemplos e nas capturas.
+
+## Verificações automáticas
+
+O GitHub Actions está configurado para executar análise estática, testes e compilação Android de debug nos pushes e pull requests. Acompanhe os resultados na aba Actions do repositório.
