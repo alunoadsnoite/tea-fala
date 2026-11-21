@@ -1,4 +1,12 @@
-# tea-fala
+# TEA Fala
+
+**Comunicação aumentativa e alternativa em um quadro simples e offline.**
+
+`Flutter · Dart · Android`
+
+[Reportar problema](https://github.com/alunoadsnoite/tea-fala/issues) · [Licença](LICENSE)
+
+<img src="fastlane/metadata/android/pt-BR/images/icon.png" alt="Ícone do TEA Fala" width="104">
 
 TEA Fala - Quadro de Comunicação Offline para o público TEA
 
@@ -32,6 +40,28 @@ Um aplicativo Flutter, Dart e Kotlin para auxiliar pessoas com TEA (Transtorno d
 
 `br.com.valdenor.teafala`
 
+## Desenvolver e testar
+
+Use a versão de Flutter indicada acima, com Android SDK e Java configurados.
+
+```sh
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+flutter build apk --release
+```
+
+O APK local fica em `build/app/outputs/flutter-apk/app-release.apk`. A assinatura usada na distribuição precisa ser mantida para permitir atualizações da mesma instalação.
+
+## Licença
+
+Consulte a [GNU General Public License v3.0](LICENSE).
+
 ## Desenvolvedor
 
 Valdenor — valdenor.sa@proton.me
+
+## Como contribuir
+
+Sugestões, traduções e relatos de problemas são bem-vindos. Abra uma issue com o contexto e o comportamento esperado. Para alterações de código, explique a mudança e os testes realizados no pull request. Use dados fictícios nos exemplos e nas capturas.
