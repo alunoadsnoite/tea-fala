@@ -24,4 +24,11 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - run: flutter analyze
       - run: flutter test
-      - run: flutter build apk --debug
+      - run: flutter build apk --release --target-platform android-arm64 --no-pub
+      - name: Disponibilizar APK de teste
+        uses: actions/upload-artifact@v4
+        with:
+          name: TEA_Fala_APK_teste
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
