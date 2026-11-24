@@ -3,6 +3,7 @@ import 'package:tea_fala/core/language/translation_service.dart';
 import 'package:tea_fala/core/theme/app_state_notifier.dart';
 import 'package:tea_fala/core/theme/audio_record_service.dart';
 import 'package:tea_fala/core/theme/tts_service.dart';
+import 'package:tea_fala/core/theme/communication_speech.dart';
 import 'package:tea_fala/data/models/communication_item.dart';
 import 'package:tea_fala/data/repositories/communication_repository.dart';
 import 'package:tea_fala/presentation/widgets/communication_button.dart';
@@ -47,6 +48,36 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
     setState(() {
       _frase.clear();
     });
+  }
+
+  Future<void> _lerFrase() async {
+    if (_frase.length == 1) {
+      await speakCommunicationItem(_frase.single, widget.tts, widget.tr);
+      return;
+    }
+    await widget.tts.speak(
+      _frase.map((item) => widget.tr.t(item.id)).join(', '),
+    );
+  }
+
+  void _mostrarFrase() {
+    final text = _frase.map((item) => widget.tr.t(item.id)).join(', ');
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        content: SelectableText(
+          text,
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -127,15 +158,15 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                             child: ElevatedButton.icon(
                               icon: const Icon(Icons.volume_up),
                               label: Text(widget.tr.t('readPhrase')),
-                              onPressed: () async {
-                                final texto = _frase
-                                    .map((i) => widget.tr.t(i.id))
-                                    .join(', ');
-                                await widget.tts.speak(texto);
-                              },
+                              onPressed: _lerFrase,
                             ),
                           ),
                         ],
+                      ),
+                      TextButton.icon(
+                        onPressed: _mostrarFrase,
+                        icon: const Icon(Icons.text_fields),
+                        label: Text(widget.tr.t('showPhrase')),
                       ),
                     ],
                   ),
@@ -189,10 +220,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
       ),
       floatingActionButton: _frase.isNotEmpty
           ? FloatingActionButton.extended(
-              onPressed: () async {
-                final texto = _frase.map((i) => widget.tr.t(i.id)).join(', ');
-                await widget.tts.speak(texto);
-              },
+              onPressed: _lerFrase,
               icon: const Icon(Icons.volume_up),
               label: Text(widget.tr.t('readPhrase')),
             )

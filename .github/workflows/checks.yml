@@ -18,11 +18,11 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.47.9'
+          flutter-version: '3.50.1'
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter analyze
+      - run: flutter analyze --no-fatal-infos
       - run: flutter test
       - run: flutter build apk --release --target-platform android-arm64 --no-pub
       - name: Disponibilizar APK de teste

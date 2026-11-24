@@ -207,6 +207,14 @@ class CommunicationRepository {
     ),
 
     // Ações
+    CommunicationItem(
+      id: 'sim', label: 'Sim', emoji: '👍', ttsText: 'Sim',
+      categoryId: 'acoes', order: -1,
+    ),
+    CommunicationItem(
+      id: 'nao', label: 'Não', emoji: '👎', ttsText: 'Não',
+      categoryId: 'acoes', order: 0,
+    ),
     CommunicationItem(id: 'parar', label: 'Pare', emoji: '🛑', ttsText: 'Pare', categoryId: 'acoes', order: 1),
     CommunicationItem(id: 'ajuda', label: 'Quero ajuda', emoji: '🆘', ttsText: 'Quero ajuda', categoryId: 'acoes', order: 2),
     CommunicationItem(id: 'brincar', label: 'Quero brincar', emoji: '🧸', ttsText: 'Quero brincar', categoryId: 'acoes', order: 3),

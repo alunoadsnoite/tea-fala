@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
-import 'package:tea_fala/core/theme/audio_player_service.dart';
+import 'package:tea_fala/core/theme/communication_speech.dart';
 import 'package:tea_fala/core/theme/tts_service.dart';
 import 'package:tea_fala/data/models/communication_item.dart';
-import 'package:tea_fala/data/repositories/custom_audio_repository.dart';
 
 /// Cartão com rótulo acessível também no modo somente imagens.
 class CommunicationButton extends StatelessWidget {
@@ -27,12 +24,7 @@ class CommunicationButton extends StatelessWidget {
   });
 
   Future<void> _onTap() async {
-    final path = await CustomAudioRepository.instance.get(item.id);
-    if (path == null ||
-        !await File(path).exists() ||
-        !await AudioPlayerService.instance.play(path)) {
-      await tts.speak(tr.t(item.id));
-    }
+    await speakCommunicationItem(item, tts, tr);
     onAdicionarFrase?.call();
   }
 

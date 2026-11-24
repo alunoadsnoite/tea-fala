@@ -44,17 +44,17 @@ void main() {
 
     final card = find.descendant(
       of: find.byType(GridView),
-      matching: find.bySemanticsLabel('Quero uma pausa'),
+      matching: find.bySemanticsLabel('Quero silêncio'),
     );
     await tester.scrollUntilVisible(card.hitTestable(), 150);
-    expect(find.text('Quero uma pausa'), findsNothing);
+    expect(find.text('Quero silêncio'), findsNothing);
     await tester.tap(card);
     await tester.pumpAndSettle();
-    expect(spoken, ['Quero uma pausa']);
+    expect(spoken, ['Quero silêncio']);
 
     await tester.tap(find.widgetWithText(ElevatedButton, 'Ler a frase'));
     await tester.pumpAndSettle();
-    expect(spoken, ['Quero uma pausa', 'Quero uma pausa']);
+    expect(spoken, ['Quero silêncio', 'Quero silêncio']);
 
     // A long phrase must leave space to keep using the cards on a short screen.
     tester.view.devicePixelRatio = 1;
@@ -102,7 +102,7 @@ void main() {
           }
         }
       }
-      expect(ids, hasLength(54));
+      expect(ids, hasLength(56));
       await language.setLanguage(AppLanguage.pt);
     },
   );

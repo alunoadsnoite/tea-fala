@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tea_fala/data/repositories/phrase_history_service.dart';
+import 'package:tea_fala/presentation/screens/print_board_screen.dart';
 import 'package:tea_fala/core/language/language_service.dart';
 import 'package:tea_fala/core/language/translation_service.dart';
 import 'package:tea_fala/core/theme/app_state_notifier.dart';
@@ -33,6 +35,38 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  Future<void> _deleteSavedPhrases() async {
+    final tr = widget.tr;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr.t('deleteSavedPhrases')),
+        content: Text(tr.t('deleteSavedPhrasesConfirm')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr.t('cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr.t('delete')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    var result = 'savedPhrasesDeleted';
+    try {
+      await PhraseHistoryService.instance.clearHistory();
+    } catch (_) {
+      result = 'savedPhrasesDeleteError';
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(tr.t(result))));
+    }
+  }
+
   Future<void> _deleteLegacyAudio() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -59,9 +93,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       result = 'legacyAudioDeleteError';
     }
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.tr.t(result))),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(widget.tr.t(result))));
     }
   }
 
@@ -69,21 +102,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _contactDeveloper() async {
     final success = await ContactService.instance.contactDeveloper();
     if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(widget.tr.t('emailError')),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(widget.tr.t('emailError'))));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.tr.t('settings')),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(widget.tr.t('settings')), centerTitle: true),
       body: ListView(
         children: [
           // Seção: Tema
@@ -94,15 +121,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               widget.theme.mode == AppThemeMode.light
                   ? widget.tr.t('themeLight')
                   : widget.theme.mode == AppThemeMode.dark
-                      ? widget.tr.t('themeDark')
-                      : widget.tr.t('themeSystem'),
+                  ? widget.tr.t('themeDark')
+                  : widget.tr.t('themeSystem'),
             ),
             trailing: DropdownButton<AppThemeMode>(
               value: widget.theme.mode,
               items: [
-                DropdownMenuItem(value: AppThemeMode.light, child: Text(widget.tr.t('themeLight'))),
-                DropdownMenuItem(value: AppThemeMode.dark, child: Text(widget.tr.t('themeDark'))),
-                DropdownMenuItem(value: AppThemeMode.system, child: Text(widget.tr.t('themeSystem'))),
+                DropdownMenuItem(
+                  value: AppThemeMode.light,
+                  child: Text(widget.tr.t('themeLight')),
+                ),
+                DropdownMenuItem(
+                  value: AppThemeMode.dark,
+                  child: Text(widget.tr.t('themeDark')),
+                ),
+                DropdownMenuItem(
+                  value: AppThemeMode.system,
+                  child: Text(widget.tr.t('themeSystem')),
+                ),
               ],
               onChanged: (value) async {
                 if (value != null) {
@@ -122,10 +158,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: DropdownButton<AppLanguage>(
               value: widget.language.language,
               items: AppLanguage.values
-                  .map((lang) => DropdownMenuItem(
-                        value: lang,
-                        child: Text(lang.name),
-                      ))
+                  .map(
+                    (lang) =>
+                        DropdownMenuItem(value: lang, child: Text(lang.name)),
+                  )
                   .toList(),
               onChanged: (lang) async {
                 if (lang != null) {
@@ -153,9 +189,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Seção: Privacidade
           ListTile(
+            leading: const Icon(Icons.print_outlined),
+            title: Text(widget.tr.t('printBoard')),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => PrintBoardScreen(tr: widget.tr),
+              ),
+            ),
+          ),
+
+          ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
             title: Text(widget.tr.t('privacy')),
             subtitle: Text(widget.tr.t('privacyNotice')),
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_outline),
+            title: Text(widget.tr.t('deleteSavedPhrases')),
+            onTap: _deleteSavedPhrases,
           ),
           ListTile(
             leading: const Icon(Icons.delete_outline),

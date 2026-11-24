@@ -9,11 +9,22 @@ class AudioPlayerService {
 
   final AudioPlayer _player = AudioPlayer();
 
-  /// Reproduz um arquivo local de uma versão anterior.
-  Future<bool> play(String filePath) async {
+  Future<bool> play(String filePath) => _play(DeviceFileSource(filePath));
+
+  Future<bool> playAsset(String path) => _play(AssetSource(path));
+
+  Future<void> stop() async {
     try {
       await _player.stop();
-      await _player.play(DeviceFileSource(filePath));
+    } catch (error) {
+      developer.log('Erro ao parar áudio: $error', name: 'AudioPlayerService');
+    }
+  }
+
+  Future<bool> _play(Source source) async {
+    try {
+      await _player.stop();
+      await _player.play(source);
       return true;
     } catch (e) {
       developer.log(
