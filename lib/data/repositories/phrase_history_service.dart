@@ -107,10 +107,14 @@ class PhraseHistoryService {
         emoji: emoji,
       );
     } else {
-      // Adicionar nova frase
+      var candidate = now.microsecondsSinceEpoch;
+      final usedIds = history.map((item) => item.id).toSet();
+      while (usedIds.contains(candidate.toString())) {
+        candidate++;
+      }
       history.add(
         PhraseHistoryItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: candidate.toString(),
           text: text,
           useCount: 1,
           lastUsed: now,
