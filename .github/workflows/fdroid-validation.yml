@@ -1,0 +1,60 @@
+name: F-Droid validation
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fdroid-validation.yml'
+      - '.flutter-version'
+      - 'android/**'
+      - 'lib/**'
+      - 'pubspec.*'
+      - 'test/**'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install pinned Flutter
+        run: |
+          revision=$(tr -d '[:space:]' < .flutter-version)
+          git init "$RUNNER_TEMP/flutter"
+          git -C "$RUNNER_TEMP/flutter" remote add origin https://github.com/flutter/flutter.git
+          git -C "$RUNNER_TEMP/flutter" fetch --depth=1 origin "$revision"
+          git -C "$RUNNER_TEMP/flutter" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/flutter" rev-parse HEAD)" = "$revision"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build apk --release --split-per-abi
+      - name: Verify APK architectures and version codes
+        shell: bash
+        run: |
+          set -euo pipefail
+          aapt=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -1)
+          base=$(sed -nE 's/^version:.*\+([0-9]+)$/\1/p' pubspec.yaml)
+          test -n "$base"
+          for entry in armeabi-v7a:1 arm64-v8a:2 x86_64:3; do
+            abi=${entry%:*}
+            suffix=${entry#*:}
+            apk="build/app/outputs/flutter-apk/app-$abi-release.apk"
+            info=$("$aapt" dump badging "$apk")
+            echo "$info" | grep -E '^(package:|native-code:)'
+            expected=$((base * 10 + suffix))
+            grep -q "versionCode='$expected'" <<< "$info"
+            test "$(sed -n 's/^native-code: //p' <<< "$info" | xargs)" = "$abi"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tea-fala-split-apks
+          path: build/app/outputs/flutter-apk/*-release.apk
+          if-no-files-found: error
