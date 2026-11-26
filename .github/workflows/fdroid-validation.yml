@@ -27,7 +27,7 @@ jobs:
           revision=$(tr -d '[:space:]' < .flutter-version)
           git init "$RUNNER_TEMP/flutter"
           git -C "$RUNNER_TEMP/flutter" remote add origin https://github.com/flutter/flutter.git
-          git -C "$RUNNER_TEMP/flutter" fetch --depth=1 origin "$revision"
+          git -C "$RUNNER_TEMP/flutter" fetch --tags origin "$revision"
           git -C "$RUNNER_TEMP/flutter" checkout --detach FETCH_HEAD
           test "$(git -C "$RUNNER_TEMP/flutter" rev-parse HEAD)" = "$revision"
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
